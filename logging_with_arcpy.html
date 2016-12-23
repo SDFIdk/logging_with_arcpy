@@ -1,0 +1,214 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module logging_with_arcpy</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>logging_with_arcpy</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:///C:/_hanne/git/logging_with_arcpy/logging_with_arcpy.py">c:\_hanne\git\logging_with_arcpy\logging_with_arcpy.py</a></font></td></tr></table>
+    <p><tt>This&nbsp;module&nbsp;allows&nbsp;Python's&nbsp;logging&nbsp;module&nbsp;and&nbsp;Esri's&nbsp;ArcMap&nbsp;tools&nbsp;to&nbsp;play&nbsp;nicely&nbsp;together.<br>
+&nbsp;<br>
+Everything&nbsp;here&nbsp;works&nbsp;with&nbsp;the&nbsp;root&nbsp;logger,&nbsp;there&nbsp;is&nbsp;currently&nbsp;no&nbsp;functionality&nbsp;to&nbsp;work&nbsp;with&nbsp;multiple&nbsp;loggers.<br>
+&nbsp;<br>
+The&nbsp;standard&nbsp;logging.basicConfig()&nbsp;doesn't&nbsp;work&nbsp;out&nbsp;of&nbsp;the&nbsp;box&nbsp;in&nbsp;ArcMap&nbsp;tools,&nbsp;because&nbsp;the&nbsp;logging&nbsp;session&nbsp;lives<br>
+throughout&nbsp;the&nbsp;ArcMap&nbsp;session,&nbsp;and&nbsp;isn't&nbsp;restarted&nbsp;with&nbsp;every&nbsp;tool&nbsp;invocation.&nbsp;<a href="#-init_logging">init_logging</a>()&nbsp;can&nbsp;be&nbsp;used&nbsp;instead&nbsp;of<br>
+basicConfig(),&nbsp;and&nbsp;takes&nbsp;care&nbsp;of&nbsp;this&nbsp;issue&nbsp;by&nbsp;performing&nbsp;the&nbsp;necessary&nbsp;(re)initialisations.<br>
+&nbsp;<br>
+Furthermore,&nbsp;<a href="#-flush_and_close_logger">flush_and_close_logger</a>()&nbsp;should&nbsp;be&nbsp;called&nbsp;at&nbsp;the&nbsp;end&nbsp;of&nbsp;each&nbsp;script,&nbsp;to&nbsp;ensure&nbsp;that&nbsp;all&nbsp;output&nbsp;is&nbsp;flushed<br>
+when&nbsp;the&nbsp;script&nbsp;terminates.&nbsp;For&nbsp;the&nbsp;same&nbsp;reason&nbsp;mentioned&nbsp;above,&nbsp;some&nbsp;logging&nbsp;output&nbsp;may&nbsp;be&nbsp;delayed&nbsp;otherwise.<br>
+&nbsp;<br>
+Finally,&nbsp;the&nbsp;<a href="#ArcPyLogHandler">ArcPyLogHandler</a>&nbsp;class&nbsp;(mostly&nbsp;adopted&nbsp;from<br>
+<a href="http://gis.stackexchange.com/questions/135920/arcpy-logging-error-messages">http://gis.stackexchange.com/questions/135920/arcpy-logging-error-messages</a>)&nbsp;allows&nbsp;the&nbsp;logging&nbsp;module&nbsp;to&nbsp;send&nbsp;output&nbsp;to<br>
+ArcMap's&nbsp;tool&nbsp;output&nbsp;window,&nbsp;using&nbsp;arcpy.AddMessage(),&nbsp;etc.<br>
+&nbsp;<br>
+TODO:<br>
+-&nbsp;<a href="#ArcPyLogHandler">ArcPyLogHandler</a>&nbsp;currently&nbsp;creates&nbsp;an&nbsp;empty&nbsp;file&nbsp;as&nbsp;given&nbsp;in&nbsp;input.&nbsp;If&nbsp;it&nbsp;isn't&nbsp;used,&nbsp;it&nbsp;shouldn't&nbsp;be&nbsp;created.<br>
+&nbsp;<br>
+Created&nbsp;by:&nbsp;Hanne&nbsp;L.&nbsp;Petersen&nbsp;&lt;halpe@sdfe.dk&gt;<br>
+Created&nbsp;on:&nbsp;2016-08-26</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="arcpy.html">arcpy</a><br>
+</td><td width="25%" valign=top><a href="logging.html">logging</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="socket.html">socket</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="logging.handlers.html#RotatingFileHandler">logging.handlers.RotatingFileHandler</a>(<a href="logging.handlers.html#BaseRotatingHandler">logging.handlers.BaseRotatingHandler</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="logging_with_arcpy.html#ArcPyLogHandler">ArcPyLogHandler</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ArcPyLogHandler">class <strong>ArcPyLogHandler</strong></a>(<a href="logging.handlers.html#RotatingFileHandler">logging.handlers.RotatingFileHandler</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Custom&nbsp;logging&nbsp;class&nbsp;that&nbsp;passes&nbsp;messages&nbsp;to&nbsp;the&nbsp;arcpy&nbsp;tool&nbsp;window.<br>
+&nbsp;<br>
+From&nbsp;<a href="http://gis.stackexchange.com/questions/135920/arcpy-logging-error-messages">http://gis.stackexchange.com/questions/135920/arcpy-logging-error-messages</a><br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="logging_with_arcpy.html#ArcPyLogHandler">ArcPyLogHandler</a></dd>
+<dd><a href="logging.handlers.html#RotatingFileHandler">logging.handlers.RotatingFileHandler</a></dd>
+<dd><a href="logging.handlers.html#BaseRotatingHandler">logging.handlers.BaseRotatingHandler</a></dd>
+<dd><a href="logging.html#FileHandler">logging.FileHandler</a></dd>
+<dd><a href="logging.html#StreamHandler">logging.StreamHandler</a></dd>
+<dd><a href="logging.html#Handler">logging.Handler</a></dd>
+<dd><a href="logging.html#Filterer">logging.Filterer</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="ArcPyLogHandler-emit"><strong>emit</strong></a>(self, record)</dt><dd><tt>Write&nbsp;the&nbsp;log&nbsp;message.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="logging.handlers.html#RotatingFileHandler">logging.handlers.RotatingFileHandler</a>:<br>
+<dl><dt><a name="ArcPyLogHandler-__init__"><strong>__init__</strong></a>(self, filename, mode<font color="#909090">='a'</font>, maxBytes<font color="#909090">=0</font>, backupCount<font color="#909090">=0</font>, encoding<font color="#909090">=None</font>, delay<font color="#909090">=0</font>)</dt><dd><tt>Open&nbsp;the&nbsp;specified&nbsp;file&nbsp;and&nbsp;use&nbsp;it&nbsp;as&nbsp;the&nbsp;stream&nbsp;for&nbsp;logging.<br>
+&nbsp;<br>
+By&nbsp;default,&nbsp;the&nbsp;file&nbsp;grows&nbsp;indefinitely.&nbsp;You&nbsp;can&nbsp;specify&nbsp;particular<br>
+values&nbsp;of&nbsp;maxBytes&nbsp;and&nbsp;backupCount&nbsp;to&nbsp;allow&nbsp;the&nbsp;file&nbsp;to&nbsp;rollover&nbsp;at<br>
+a&nbsp;predetermined&nbsp;size.<br>
+&nbsp;<br>
+Rollover&nbsp;occurs&nbsp;whenever&nbsp;the&nbsp;current&nbsp;log&nbsp;file&nbsp;is&nbsp;nearly&nbsp;maxBytes&nbsp;in<br>
+length.&nbsp;If&nbsp;backupCount&nbsp;is&nbsp;&gt;=&nbsp;1,&nbsp;the&nbsp;system&nbsp;will&nbsp;successively&nbsp;create<br>
+new&nbsp;files&nbsp;with&nbsp;the&nbsp;same&nbsp;pathname&nbsp;as&nbsp;the&nbsp;base&nbsp;file,&nbsp;but&nbsp;with&nbsp;extensions<br>
+".1",&nbsp;".2"&nbsp;etc.&nbsp;appended&nbsp;to&nbsp;it.&nbsp;For&nbsp;example,&nbsp;with&nbsp;a&nbsp;backupCount&nbsp;of&nbsp;5<br>
+and&nbsp;a&nbsp;base&nbsp;file&nbsp;name&nbsp;of&nbsp;"app.log",&nbsp;you&nbsp;would&nbsp;get&nbsp;"app.log",<br>
+"app.log.1",&nbsp;"app.log.2",&nbsp;...&nbsp;through&nbsp;to&nbsp;"app.log.5".&nbsp;The&nbsp;file&nbsp;being<br>
+written&nbsp;to&nbsp;is&nbsp;always&nbsp;"app.log"&nbsp;-&nbsp;when&nbsp;it&nbsp;gets&nbsp;filled&nbsp;up,&nbsp;it&nbsp;is&nbsp;closed<br>
+and&nbsp;renamed&nbsp;to&nbsp;"app.log.1",&nbsp;and&nbsp;if&nbsp;files&nbsp;"app.log.1",&nbsp;"app.log.2"&nbsp;etc.<br>
+exist,&nbsp;then&nbsp;they&nbsp;are&nbsp;renamed&nbsp;to&nbsp;"app.log.2",&nbsp;"app.log.3"&nbsp;etc.<br>
+respectively.<br>
+&nbsp;<br>
+If&nbsp;maxBytes&nbsp;is&nbsp;zero,&nbsp;rollover&nbsp;never&nbsp;occurs.</tt></dd></dl>
+
+<dl><dt><a name="ArcPyLogHandler-doRollover"><strong>doRollover</strong></a>(self)</dt><dd><tt>Do&nbsp;a&nbsp;rollover,&nbsp;as&nbsp;described&nbsp;in&nbsp;<a href="#ArcPyLogHandler-__init__">__init__</a>().</tt></dd></dl>
+
+<dl><dt><a name="ArcPyLogHandler-shouldRollover"><strong>shouldRollover</strong></a>(self, record)</dt><dd><tt>Determine&nbsp;if&nbsp;rollover&nbsp;should&nbsp;occur.<br>
+&nbsp;<br>
+Basically,&nbsp;see&nbsp;if&nbsp;the&nbsp;supplied&nbsp;record&nbsp;would&nbsp;cause&nbsp;the&nbsp;file&nbsp;to&nbsp;exceed<br>
+the&nbsp;size&nbsp;limit&nbsp;we&nbsp;have.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="logging.html#FileHandler">logging.FileHandler</a>:<br>
+<dl><dt><a name="ArcPyLogHandler-close"><strong>close</strong></a>(self)</dt><dd><tt>Closes&nbsp;the&nbsp;stream.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="logging.html#StreamHandler">logging.StreamHandler</a>:<br>
+<dl><dt><a name="ArcPyLogHandler-flush"><strong>flush</strong></a>(self)</dt><dd><tt>Flushes&nbsp;the&nbsp;stream.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="logging.html#Handler">logging.Handler</a>:<br>
+<dl><dt><a name="ArcPyLogHandler-acquire"><strong>acquire</strong></a>(self)</dt><dd><tt>Acquire&nbsp;the&nbsp;I/O&nbsp;thread&nbsp;lock.</tt></dd></dl>
+
+<dl><dt><a name="ArcPyLogHandler-createLock"><strong>createLock</strong></a>(self)</dt><dd><tt>Acquire&nbsp;a&nbsp;thread&nbsp;lock&nbsp;for&nbsp;serializing&nbsp;access&nbsp;to&nbsp;the&nbsp;underlying&nbsp;I/O.</tt></dd></dl>
+
+<dl><dt><a name="ArcPyLogHandler-format"><strong>format</strong></a>(self, record)</dt><dd><tt>Format&nbsp;the&nbsp;specified&nbsp;record.<br>
+&nbsp;<br>
+If&nbsp;a&nbsp;formatter&nbsp;is&nbsp;set,&nbsp;use&nbsp;it.&nbsp;Otherwise,&nbsp;use&nbsp;the&nbsp;default&nbsp;formatter<br>
+for&nbsp;the&nbsp;module.</tt></dd></dl>
+
+<dl><dt><a name="ArcPyLogHandler-get_name"><strong>get_name</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="ArcPyLogHandler-handle"><strong>handle</strong></a>(self, record)</dt><dd><tt>Conditionally&nbsp;emit&nbsp;the&nbsp;specified&nbsp;logging&nbsp;record.<br>
+&nbsp;<br>
+Emission&nbsp;depends&nbsp;on&nbsp;filters&nbsp;which&nbsp;may&nbsp;have&nbsp;been&nbsp;added&nbsp;to&nbsp;the&nbsp;handler.<br>
+Wrap&nbsp;the&nbsp;actual&nbsp;emission&nbsp;of&nbsp;the&nbsp;record&nbsp;with&nbsp;acquisition/release&nbsp;of<br>
+the&nbsp;I/O&nbsp;thread&nbsp;lock.&nbsp;Returns&nbsp;whether&nbsp;the&nbsp;filter&nbsp;passed&nbsp;the&nbsp;record&nbsp;for<br>
+emission.</tt></dd></dl>
+
+<dl><dt><a name="ArcPyLogHandler-handleError"><strong>handleError</strong></a>(self, record)</dt><dd><tt>Handle&nbsp;errors&nbsp;which&nbsp;occur&nbsp;during&nbsp;an&nbsp;<a href="#ArcPyLogHandler-emit">emit</a>()&nbsp;call.<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;should&nbsp;be&nbsp;called&nbsp;from&nbsp;handlers&nbsp;when&nbsp;an&nbsp;exception&nbsp;is<br>
+encountered&nbsp;during&nbsp;an&nbsp;<a href="#ArcPyLogHandler-emit">emit</a>()&nbsp;call.&nbsp;If&nbsp;raiseExceptions&nbsp;is&nbsp;false,<br>
+exceptions&nbsp;get&nbsp;silently&nbsp;ignored.&nbsp;This&nbsp;is&nbsp;what&nbsp;is&nbsp;mostly&nbsp;wanted<br>
+for&nbsp;a&nbsp;logging&nbsp;system&nbsp;-&nbsp;most&nbsp;users&nbsp;will&nbsp;not&nbsp;care&nbsp;about&nbsp;errors&nbsp;in<br>
+the&nbsp;logging&nbsp;system,&nbsp;they&nbsp;are&nbsp;more&nbsp;interested&nbsp;in&nbsp;application&nbsp;errors.<br>
+You&nbsp;could,&nbsp;however,&nbsp;replace&nbsp;this&nbsp;with&nbsp;a&nbsp;custom&nbsp;handler&nbsp;if&nbsp;you&nbsp;wish.<br>
+The&nbsp;record&nbsp;which&nbsp;was&nbsp;being&nbsp;processed&nbsp;is&nbsp;passed&nbsp;in&nbsp;to&nbsp;this&nbsp;method.</tt></dd></dl>
+
+<dl><dt><a name="ArcPyLogHandler-release"><strong>release</strong></a>(self)</dt><dd><tt>Release&nbsp;the&nbsp;I/O&nbsp;thread&nbsp;lock.</tt></dd></dl>
+
+<dl><dt><a name="ArcPyLogHandler-setFormatter"><strong>setFormatter</strong></a>(self, fmt)</dt><dd><tt>Set&nbsp;the&nbsp;formatter&nbsp;for&nbsp;this&nbsp;handler.</tt></dd></dl>
+
+<dl><dt><a name="ArcPyLogHandler-setLevel"><strong>setLevel</strong></a>(self, level)</dt><dd><tt>Set&nbsp;the&nbsp;logging&nbsp;level&nbsp;of&nbsp;this&nbsp;handler.</tt></dd></dl>
+
+<dl><dt><a name="ArcPyLogHandler-set_name"><strong>set_name</strong></a>(self, name)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="logging.html#Handler">logging.Handler</a>:<br>
+<dl><dt><strong>name</strong></dt>
+</dl>
+<hr>
+Methods inherited from <a href="logging.html#Filterer">logging.Filterer</a>:<br>
+<dl><dt><a name="ArcPyLogHandler-addFilter"><strong>addFilter</strong></a>(self, filter)</dt><dd><tt>Add&nbsp;the&nbsp;specified&nbsp;filter&nbsp;to&nbsp;this&nbsp;handler.</tt></dd></dl>
+
+<dl><dt><a name="ArcPyLogHandler-filter"><strong>filter</strong></a>(self, record)</dt><dd><tt>Determine&nbsp;if&nbsp;a&nbsp;record&nbsp;is&nbsp;loggable&nbsp;by&nbsp;consulting&nbsp;all&nbsp;the&nbsp;filters.<br>
+&nbsp;<br>
+The&nbsp;default&nbsp;is&nbsp;to&nbsp;allow&nbsp;the&nbsp;record&nbsp;to&nbsp;be&nbsp;logged;&nbsp;any&nbsp;filter&nbsp;can&nbsp;veto<br>
+this&nbsp;and&nbsp;the&nbsp;record&nbsp;is&nbsp;then&nbsp;dropped.&nbsp;Returns&nbsp;a&nbsp;zero&nbsp;value&nbsp;if&nbsp;a&nbsp;record<br>
+is&nbsp;to&nbsp;be&nbsp;dropped,&nbsp;else&nbsp;non-zero.</tt></dd></dl>
+
+<dl><dt><a name="ArcPyLogHandler-removeFilter"><strong>removeFilter</strong></a>(self, filter)</dt><dd><tt>Remove&nbsp;the&nbsp;specified&nbsp;filter&nbsp;from&nbsp;this&nbsp;handler.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="logging.html#Filterer">logging.Filterer</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-add_handler"><strong>add_handler</strong></a>(h, level<font color="#909090">=20</font>, fmt<font color="#909090">=''</font>, datefmt<font color="#909090">='%d-%m-%Y %H:%M'</font>)</dt><dd><tt>Add&nbsp;a&nbsp;handler.</tt></dd></dl>
+ <dl><dt><a name="-flush_and_close_logger"><strong>flush_and_close_logger</strong></a>()</dt><dd><tt>From&nbsp;ArcMap&nbsp;there&nbsp;seem&nbsp;to&nbsp;be&nbsp;some&nbsp;problems&nbsp;with&nbsp;flushing,&nbsp;and&nbsp;this&nbsp;seems&nbsp;to&nbsp;help...</tt></dd></dl>
+ <dl><dt><a name="-init_logging"><strong>init_logging</strong></a>(filename<font color="#909090">='log.txt'</font>, level<font color="#909090">=20</font>, fmt<font color="#909090">=''</font>, datefmt<font color="#909090">='%d-%m-%Y %H:%M'</font>, mode<font color="#909090">='a'</font>)</dt><dd><tt>Initialise&nbsp;a&nbsp;useful&nbsp;logging&nbsp;session.&nbsp;For&nbsp;ArcMap&nbsp;tools,&nbsp;logging.basicConfig&nbsp;probably&nbsp;won't&nbsp;do&nbsp;what&nbsp;you&nbsp;want...&nbsp;(details&nbsp;below)<br>
+&nbsp;<br>
+Use&nbsp;fmt="%(asctime)s&nbsp;%(message)s"&nbsp;to&nbsp;log&nbsp;without&nbsp;user&nbsp;and&nbsp;computer&nbsp;name.<br>
+&nbsp;<br>
+If&nbsp;filename&nbsp;is&nbsp;a&nbsp;relative&nbsp;path,&nbsp;it&nbsp;will&nbsp;be&nbsp;relative&nbsp;to&nbsp;C:\Windows\System32&nbsp;for&nbsp;tools&nbsp;called&nbsp;from&nbsp;an&nbsp;ArcMap&nbsp;toolbox.<br>
+So&nbsp;just&nbsp;use&nbsp;absolute&nbsp;paths...<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;if&nbsp;you're&nbsp;using&nbsp;the&nbsp;logging&nbsp;module&nbsp;from&nbsp;inside&nbsp;ArcMap,&nbsp;e.g.&nbsp;from&nbsp;a&nbsp;tool&nbsp;in&nbsp;a&nbsp;toolbox,&nbsp;your&nbsp;logging&nbsp;session<br>
+will&nbsp;survive&nbsp;within&nbsp;the&nbsp;ArcMap&nbsp;session!&nbsp;In&nbsp;addition,&nbsp;the&nbsp;logging.basicConfig()&nbsp;function&nbsp;is&nbsp;intended&nbsp;to&nbsp;be&nbsp;run&nbsp;only<br>
+once&nbsp;("only&nbsp;the&nbsp;first&nbsp;call&nbsp;will&nbsp;actually&nbsp;do&nbsp;anything:&nbsp;subsequent&nbsp;calls&nbsp;are&nbsp;effectively&nbsp;no-ops",&nbsp;from<br>
+https://docs.python.org/2/howto/logging.html#logging-advanced-tutorial)<br>
+I.e.,&nbsp;you&nbsp;may&nbsp;have&nbsp;two&nbsp;tools&nbsp;that&nbsp;write&nbsp;to&nbsp;different&nbsp;log&nbsp;files&nbsp;-&nbsp;this&nbsp;won't&nbsp;work&nbsp;if&nbsp;you&nbsp;run&nbsp;both&nbsp;tools&nbsp;from&nbsp;the&nbsp;same<br>
+ArcMap&nbsp;session,&nbsp;and&nbsp;you&nbsp;do&nbsp;it&nbsp;the&nbsp;naive&nbsp;way.<br>
+Or&nbsp;if&nbsp;you&nbsp;run&nbsp;a&nbsp;tool&nbsp;several&nbsp;times&nbsp;inside&nbsp;the&nbsp;same&nbsp;ArcMap&nbsp;session,&nbsp;calling&nbsp;basicConfig&nbsp;WILL&nbsp;DO&nbsp;NOTHING.&nbsp;I.e.<br>
+debugging&nbsp;sucks&nbsp;big&nbsp;time.<br>
+&nbsp;<br>
+In&nbsp;ArcMap&nbsp;you&nbsp;probably&nbsp;want&nbsp;to&nbsp;run&nbsp;<a href="#-flush_and_close_logger">flush_and_close_logger</a>()&nbsp;at&nbsp;the&nbsp;end&nbsp;of&nbsp;your&nbsp;script,&nbsp;otherwise&nbsp;output&nbsp;can<br>
+sometimes&nbsp;be&nbsp;delayed.<br>
+&nbsp;<br>
+Other&nbsp;format&nbsp;placeholders&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;https://docs.python.org/2/library/logging.html#logrecord-attributes<br>
+&nbsp;<br>
+TODO:&nbsp;The&nbsp;proper&nbsp;way&nbsp;for&nbsp;this&nbsp;module&nbsp;might&nbsp;be&nbsp;something&nbsp;with&nbsp;inheritance&nbsp;or&nbsp;subclassing...</tt></dd></dl>
+</td></tr></table>
+</body></html>
